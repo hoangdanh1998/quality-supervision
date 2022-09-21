@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "ES2022",
+    "outDir": "./lib",
+    "rootDir": "./",
+    "noImplicitAny": false,
+    "strict": false,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "suppressExcessPropertyErrors": true
+  },
+  "exclude": [
+    "test"
+  ]
+}

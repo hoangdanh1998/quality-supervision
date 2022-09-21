@@ -1,0 +1,5 @@
+{
+	"port": 3000,
+	"host": "localhost",
+	"mongodb": "mongodb://localhost:27017/quality_supervision"
+}
