@@ -1,5 +1,5 @@
 {
-    "watch": ["src", "config", "test"],
+    "watch": ["src", "config"],
     "ext": "js,ts,json,ejs",
     "ignore": ["src/logs/*", "src/**/*.{test}.ts"],
     "exec": "swc src -d lib --copy-files && node lib/app.js "

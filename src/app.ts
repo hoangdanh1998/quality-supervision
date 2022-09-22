@@ -1,7 +1,7 @@
 import express  from 'express';
 import configuration from './configuration.js';
 import mongoose from './connector/mongoose.js';
-import test from './module/core/index.js';
+import test from './module/jest/index.js';
 
 const app = express();
 
