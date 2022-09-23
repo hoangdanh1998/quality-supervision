@@ -14,13 +14,11 @@ describe('[${name}]', () => {
 	`;
 };
 
-const scenario = (name, initVariables, beforeAll, afterAll, steps) => {
+const scenario = (name, initVariables, steps) => {
   return `
 describe('[${name}]', () => {
 	const accumulation = {};
     ${initVariables}
-    ${beforeAll}
-    ${afterAll}
 		${steps}
 });`;
 };
@@ -61,7 +59,12 @@ const getResultFromSocket = (resultField) => {
 
 const expect = (expectResult, type) => {
   const expectString = `
-		expect(result).${type}(${expectResult ? JSON.stringify(expectResult) : ""});`;
+      try {
+        expect(result).${type}(${expectResult ? JSON.stringify(expectResult) : ""});
+      } catch(err) {
+        console.log("Fail with response", response);
+        throw err
+      }`;
 
   return expectString;
 };
@@ -71,18 +74,21 @@ const tryCatchExpression = (inTryExpression, inCatchExpression) => {
         try {
           ${inTryExpression}
         } catch (err) {
+          if (err.message.includes('ECONNREFUSED')) {
+            throw err
+          }
           ${inCatchExpression}
         }`;
 };
 
-const restfulRequest1 = (
+const restfulRequest1 /** cũ rồi nhưng để từ từ xóa */ = (
   endpoint,
   headers,
   method,
   payload,
   payloadPrevValue
 ) => {
-  let returnString = `const response = await axios.${method}('${endpoint}'`;
+  let returnString = `response = await axios.${method}('${endpoint}'`;
 
   if (payload) {
     let setupPayload = "";
@@ -101,7 +107,7 @@ const restfulRequest1 = (
   if (headers) {
     let setupHeader = "";
     setupHeader += `const headers = ${
-      headers.payload ? JSON.stringify(headers.payload) : JSON.stringify({})
+      headers.initHeaders ? JSON.stringify(headers.initHeaders) : JSON.stringify({})
     };
 		`;
     if (headers.accumulation) {
@@ -117,6 +123,7 @@ const restfulRequest1 = (
 
   return returnString;
 };
+
 const restfulRequest = (
   endpoint,
   headers,
@@ -136,7 +143,7 @@ const restfulRequest = (
         })
       : ``
   }
-        const response = await axios.${method}('${endpoint}' ${
+        response = await axios.${method}('${endpoint}' ${
     payload ? `,payload` : ""
   }`;
 
@@ -155,12 +162,12 @@ const restfulRequest = (
 
   returnString = `
         const headers = ${
-          headers.payload ? JSON.stringify(headers.payload) : JSON.stringify({})
+          headers.initHeaders ? JSON.stringify(headers.initHeaders) : JSON.stringify({})
         }
   ${
     headers.accumulation
       ? headers.accumulation?.map((value) => {
-          return `headers[\`${value.headerField}\`] = '${value.headerPrefix} ' +  accumulation['${value.headerValue}']
+          return `headers[\`${value.headerField}\`] = ('${value.headerPrefix} ' +  accumulation['${value.headerValue}']).trim()
 		`;
         })
       : ``
@@ -170,7 +177,7 @@ const restfulRequest = (
   // if (headers) {
   //   let setupHeader = "";
   //   setupHeader += `const headers = ${
-  //     headers.payload ? JSON.stringify(headers.payload) : JSON.stringify({})
+  //     headers.initHeaders ? JSON.stringify(headers.initHeaders) : JSON.stringify({})
   //   };
   // 	`;
   //   if (headers.accumulation) {
@@ -187,28 +194,80 @@ const restfulRequest = (
   return returnString;
 };
 
-const socketRequest = (socketName, eventName, args) => {
+const socketRequest1 = (socketName, eventName, args) => {
   return `
-        const response = await new Promise( resolve => {
+        response = await new Promise((resolve, reject) => {
           ${socketName}.emit('${eventName}', ${args.map((arg) => {
     return `${JSON.stringify(arg)}`;
-  })}, (data) => {
-            resolve(data)
+  })}, (err, data) => {
+          if (err){
+            reject(err)
+          }
+          resolve(data)
           });
-        });`;
+        }) as any; `;
 };
+const socketRequest = (eventName, args) => {
+  return `
+        response = await new Promise((resolve) => {
+          socket.on("connect", async () => {
+            await new Promise(() => {
+              socket.emit('${eventName}', ${args.map((arg) => {
+                return `${JSON.stringify(arg)}`;})}, (err, data) => {
+              if (err){
+                resolve(err)
+              }
+              resolve(data)
+              });
+            });
+          });
+        }) as any; 
+      `;
+}
 
-const socketConnect = (variable, url, query) => {
-  return `${variable} = io.connect("${url}",
+const socketConnect = (url, opts) => {
+  return `const socket = io.connect("${url}",
       { 
         forceNew: true,
+        reconnection: false,
         transports: ['polling'],
-        ${query ? `query: + ${JSON.stringify(query)}` : ""}
-      })`;
+        ${exploreSocketOpts(opts)}
+      })
+      `;
 };
 
-const socketCloseConnect = (variable) => {
-  return `${variable}.close();`;
+const exploreSocketOpts = (socketOpts) => {
+
+  let returnString = '';
+  if (socketOpts.initOpts) {
+    Object.keys(socketOpts.initOpts).map((key) => {
+      returnString += `${key} : ${JSON.stringify(socketOpts.initOpts[key])},
+          `
+    })
+  }
+
+  // const options = [ { field: 'extraHeader', value: {field: 'Author', value: 'accessToken', prefix: 'bearer'}, prefix:'' }];
+  
+  for (const option of socketOpts.accumulation) {
+    returnString += exploreObject(option);
+  }
+  
+  return returnString;
+}
+
+const exploreObject = (option) => {
+
+  if (typeof option.value === 'object') {
+    return `${option.field}: { ${exploreObject(option.value)}},`;
+  }
+
+  if (typeof option.value === 'string') {
+    return `${option.field}: '${option.prefix} ' + accumulation['${option.value}']`;
+  } 
+}
+
+const socketCloseConnect = () => {
+  return `socket.close();`;
 };
 
 const accumulation = (fieldName) => {
@@ -219,7 +278,7 @@ const accumulation = (fieldName) => {
 const beforeAll = (expression) => {
   return `beforeAll((done) => {
       ${expression}
-      done();
+      
     });
         `;
 };
@@ -232,6 +291,7 @@ const afterAll = (expression) => {
         `;
 };
 
+//todo interface for variables
 const initVariables = (variables: { name; value }[]) => {
   let returnInitVariables = ``;
   variables.map((variable) => {

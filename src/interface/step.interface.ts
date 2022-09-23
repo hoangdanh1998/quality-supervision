@@ -5,7 +5,7 @@ interface IStep {
   responseData: IOutputData;
   stopOnError: boolean;
   endpoint: IEndpoint;
-  method: string;
+  
 }
 
 interface IRequestData {
@@ -32,13 +32,32 @@ interface IExpectOutput {
 
 interface ISocketRequest {
   eventName: string;
-
+  opts: {
+    initOpts: any;
+    accumulation: IOptsField[];
+  };
   args: any[];
+
+  payload: object;
+}
+
+interface IOptsField {
+  field: string;
+  value: string | IOptsField;
+  prefix: string;
+}
+
+
+interface IHeadersField {
+  headerField: string;
+  headerValue: string;
+  headerPrefix: string;
 }
 
 interface IRestfulRequest {
   inputType: string;
-  headers: any;
+  headers: { initHeaders: any; accumulation?: IHeadersField[] };
   payload: Object;
   prevStepValue: any;
+  method: string;
 }

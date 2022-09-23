@@ -1,5 +1,5 @@
 export interface RestfulDTO { 
-	endpoint: string;
+	url: string;
 	headers: string; 
 	method: string; 
 	payload: string
@@ -8,5 +8,6 @@ export interface RestfulDTO {
 }
 
 export interface SocketDTO {
-
+	url: string;
+	
 }

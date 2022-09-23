@@ -5,6 +5,12 @@ const config: Config = {
   verbose: true,
   modulePathIgnorePatterns: [
     "node_modules/(?!(supertest)/)"
+  ],
+  reporters: [
+    "default",
+    ["./node_modules/jest-html-reporter", {
+      "pageTitle": "Test Report"
+    }]
   ]
 };
 

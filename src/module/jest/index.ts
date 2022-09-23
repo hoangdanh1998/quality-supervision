@@ -14,7 +14,9 @@ export default async function runTest() {
         requestType: RequestType.RESTFUL,
         restfulRequest: {
           inputType: InputType.BODY,
-          headers: { payload: { Accept: "*/*" } },
+      method: "post",
+
+          headers: { initHeaders: { Accept: "*/*" } },
           prevStepValue: null,
           payload: {
             strategy: "local",
@@ -33,7 +35,6 @@ export default async function runTest() {
       responseData: { setAccumulation: ["accessToken", "danh"] },
       stopOnError: true,
       endpoint: { url: "http://localhost:3030/authentication" },
-      method: "post",
     };
 
     const failToLogin: IStep = {
@@ -42,7 +43,8 @@ export default async function runTest() {
         requestType: RequestType.RESTFUL,
         restfulRequest: {
           inputType: InputType.BODY,
-          headers: { payload: { Accept: "*/*" } },
+      method: "post",
+      headers: { initHeaders: { Accept: "*/*" } },
           prevStepValue: null,
           payload: {
             strategy: "local",
@@ -61,7 +63,6 @@ export default async function runTest() {
       responseData: { setAccumulation: [] },
       stopOnError: true,
       endpoint: { url: "http://localhost:3030/authentication" },
-      method: "post",
     };
 
     const getTrader: IStep = {
@@ -70,12 +71,13 @@ export default async function runTest() {
         requestType: RequestType.RESTFUL,
         restfulRequest: {
           inputType: InputType.QUERY,
-          headers: {
+      method: "get",
+      headers: {
             accumulation: [
               {
                 headerField: "Authorization",
                 headerValue: "accessToken",
-                headerPrefix: "Bearer",
+                headerPrefix: "",
               },
               {
                 headerField: "Authorization2",
@@ -83,7 +85,7 @@ export default async function runTest() {
                 headerPrefix: "Beare2r",
               },
             ],
-            payload: {},
+            initHeaders: {}, //TODO create interface
           },
           prevStepValue: ["token", "Token1"],
           payload: {},
@@ -98,21 +100,21 @@ export default async function runTest() {
       responseData: { setAccumulation: [] },
       stopOnError: true,
       endpoint: { url: "http://localhost:3030/trader" },
-      method: "get",
     };
 
     const updateTrader: IStep = {
-      name: "API update trader fail authen",
+      name: "API update trader fail authenticate",
       requestData: {
         requestType: RequestType.RESTFUL,
         restfulRequest: {
           inputType: InputType.BODY,
-          headers: {
+      method: "put",
+      headers: {
             accumulation: [],
-            payload: {},
+            initHeaders: {},
           },
           prevStepValue: null,
-          payload: null,
+          payload: {full_name: 'hoangdanh'},
         },
       },
       outputExpected: {
@@ -126,7 +128,6 @@ export default async function runTest() {
       endpoint: {
         url: "http://localhost:3030/trader/630dd7e6674c0c54111acbbe",
       },
-      method: "put",
     };
 
     const createTrader: IStep = {
@@ -135,6 +136,7 @@ export default async function runTest() {
         requestType: RequestType.RESTFUL,
         restfulRequest: {
           inputType: InputType.BODY,
+          method: "post",
           headers: {
             accumulation: [
               {
@@ -143,7 +145,7 @@ export default async function runTest() {
                 headerPrefix: "Bearer",
               },
             ],
-            payload: "",
+            initHeaders: "",
           },
           prevStepValue: null,
           payload: {
@@ -176,7 +178,49 @@ export default async function runTest() {
       responseData: { setAccumulation: [] },
       stopOnError: true,
       endpoint: { url: "http://localhost:3030/trader" },
-      method: "post",
+    };
+
+    const createTraderBySocket: IStep = {
+      name: "API create trader by socket",
+      requestData: {
+        requestType: RequestType.SOCKET,
+        socketRequest: {
+          opts: {
+            initOpts: null,
+            accumulation: [ { field: 'extraHeaders', value: {field: 'Authorization', value: 'accessToken', prefix: 'Bearer'}, prefix:'' },]
+          },
+          eventName: 'create',
+          payload: {
+            init_balance: 50,
+            full_name: "Nguyen Hoang Danh",
+            email: (() => {
+              return generateString(11) + "@gmail.com";
+            })(),
+            telephone: (() => {
+              return Math.floor(Math.random() * 1000000000);
+            })(),
+            secret_key: (() => {
+              return generateString(11);
+            })(),
+            api_key: (() => {
+              return generateString(11);
+            })(),
+            subscribed_callback: (() => {
+              return generateString(11);
+            })(),
+          },
+          args: ['trader']
+        }
+      },
+      outputExpected: {
+        type: "toBeDefined",
+        expectValue: "",
+        status: 200,
+        resultField: "_id",
+      },
+      responseData: { setAccumulation: [] },
+      stopOnError: true,
+      endpoint: { url: "http://localhost:3030/trader" },
     };
 
     const getTraderSocket: IStep = {
@@ -184,15 +228,20 @@ export default async function runTest() {
       requestData: {
         requestType: RequestType.SOCKET,
         socketRequest: {
+          opts: {
+            initOpts: null,
+            accumulation: [ { field: 'extraHeaders', value: {field: 'Authorization', value: 'accessToken', prefix: 'Bearer'}, prefix:'' },]
+          },
           eventName: 'find',
-          args: ['trader', {}]
+          args: ['trader'],
+          payload: {}
         }
       },
       outputExpected: {
-        type: "toBeDefined",
-        expectValue: "",
+        type: "toBe",
+        expectValue: 10,
         status: 200,
-        resultField: "",
+        resultField: "limit",
       },
       responseData: { setAccumulation: [] },
       stopOnError: true,
@@ -201,20 +250,23 @@ export default async function runTest() {
     };
 
 
-    const step1 = createStep(signIn);
-    const step2 = createStep(getTrader);
-    const step3 = createStep(createTrader);
-    const step21 = createStep(failToLogin);
-    const step22 = createStep(updateTrader);
+    const stepSignIn = createStep(signIn);
+    const stepGetTrader = createStep(getTrader);
+    const stepCreateTrader = createStep(createTrader);
+    const stepFailToLogin = createStep(failToLogin);
+    const stepUpdateTrader = createStep(updateTrader);
     const stepGetTraderSocket = createStep(getTraderSocket);
+    const stepCreateTraderBySocket = createStep(createTraderBySocket);
+    const sce1 = [stepSignIn,stepGetTrader, stepCreateTraderBySocket];
+    const sce2 = [stepFailToLogin,stepUpdateTrader];
     const scenario = createScenario(
       "Kịch bản 1",
-      step1 + "\n" + step2 + "\n" + step3 + "\n" + stepGetTraderSocket
+      sce1.join('\n')
     );
 
     const scenario2 = createScenario(
       "Kịch bản 2 lỗi đăng nhập",
-      step21 + "\n" + step22
+      sce2.join('\n')
     );
 
     const fileTestContent = createProject(
@@ -222,6 +274,7 @@ export default async function runTest() {
       scenario + "\n" + scenario2
     );
 
+    //TODO naming file by format: 'projectname_datetime'
     fs.writeFile("test/hoang-danh.spec.ts", fileTestContent, function (err) {
       if (err) throw err;
       console.log("Saved!");
@@ -232,8 +285,8 @@ export default async function runTest() {
 
   try {
     // Run test
-    const result = await execaCommand("jest /test");
-    console.log("📖 ~ file: index.ts ~ line 16 ~ runTest ~ result", result);
+    const result = await execaCommand("jest --detectOpenHandles /test");
+    console.log("📖 ~ file: index.ts ~ line 16 ~ runTest ~ result", result.stderr);
   } catch (e) {
     console.log("📖 ~ file: main.js ~ line 17 ~ e", e);
   }
@@ -262,29 +315,19 @@ function createProject(name, scenarios: string) {
  * @param preparation 
  * @returns 
  */
-function createScenario(name, steps: string, preparation?: any) { //TODO docs create socket in beforeAll
-
-  const socketConnect = template.socketConnect(
-    "socket /** Variable naming */",
-    "ws://localhost:3030",
-    { token: "my-token" }
-  );
-  const socketCloseConnect = template.socketCloseConnect("socket");
+function createScenario(name, steps: string) { //TODO docs create socket in beforeAll
   return template.scenario(
     name,
-    template.initVariables([
-      { name: "socket /** Variable naming */", value: "" },
-    ]),
-    template.beforeAll(socketConnect),
-    template.afterAll(socketCloseConnect),
+    template.initVariables([]),
     steps
   );
 }
 
-function createStep(step: IStep) {
-  const initVariables = template.initVariables([{ name: "result /** Variable naming */", value: "" }]);
+function createStep(step: IStep) { //TODO refactor this function
+  const initVariables = template.initVariables([{ name: "result /** Variable naming */", value: "" }, { name: "response /** Variable naming */", value: "" }]);
 
   let request = '';
+  // Set restful request
   if (step.requestData.requestType === RequestType.RESTFUL) {
     const restfulRequest = step.requestData.restfulRequest;
     const originPayload = restfulRequest.payload
@@ -296,6 +339,7 @@ function createStep(step: IStep) {
       ? restfulRequest.prevStepValue
       : null;
     let payload;
+    // SET request payload
     if (restfulRequest.inputType === InputType.FORM) {
       payload = new FormData();
 
@@ -313,25 +357,32 @@ function createStep(step: IStep) {
     request = template.restfulRequest(
       step.endpoint.url,
       headers,
-      step.method,
+      step.requestData.restfulRequest.method,
       payload,
       prevPayloadValue
     );
   }
 
+  // Set socket request
   if (step.requestData.requestType === RequestType.SOCKET) { 
-    request = template.socketRequest( //TODO tạo interface
-      'socket',
-      step.requestData.socketRequest.eventName,
-      step.requestData.socketRequest.args, 
+    const socketConnect = template.socketConnect(
+      "ws://localhost:3030",
+      step.requestData.socketRequest.opts
     );
+    const socketCloseConnect = template.socketCloseConnect();
+    request = 
+    socketConnect + 
+    template.socketRequest( 
+      step.requestData.socketRequest.eventName,
+      [...step.requestData.socketRequest.args, step.requestData.socketRequest.payload], 
+    ) + socketCloseConnect;
   }
 
   let tryCatchExpression = "";
-  
   let result = "";
   let expect = "";  
 
+  // Set result
   if (step.requestData.requestType === RequestType.RESTFUL) {
     result = template.getResultFromResponse(
       step.outputExpected.resultField
@@ -342,12 +393,14 @@ function createStep(step: IStep) {
     );
   }
 
-  if (step.outputExpected.status !== 200 /** TODO: 200 constant value and default if not set */) {
+  if (step.requestData.requestType === RequestType.RESTFUL && step.outputExpected.status !== 200 /** TODO: 200 constant value and default if not set */) {
     const resultInCatch = template.getResultFromError( 
       step.outputExpected.resultField
     );
     tryCatchExpression = template.tryCatchExpression(request, resultInCatch);
   }
+
+
 
   expect = template.expect(step.outputExpected.expectValue, step.outputExpected.type);
   let accumulation = "";

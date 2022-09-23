@@ -1,169 +1,176 @@
-import axios from 'axios';
-import {describe, expect, it, beforeAll, afterAll} from '@jest/globals';
+import axios from "axios";
+import { describe, expect, it, beforeAll, afterAll } from "@jest/globals";
 import io from "socket.io-client";
 
+describe("[ProjectName]", () => {
+  describe("[Kịch bản 1]", () => {
+    const accumulation = {};
 
-describe('[ProjectName]', () => {
-		  
-describe('[Kịch bản 1]', () => {
-	const accumulation = {};
-    let socket /** Variable naming */;
-    
-    beforeAll((done) => {
-      socket /** Variable naming */ = io.connect("ws://localhost:3030",
-      { 
+    it("API get token", async () => {
+      let result /** Variable naming */;
+      let response /** Variable naming */;
+
+      const headers = { Accept: "*/*" };
+
+      const payload = {
+        strategy: "local",
+        email: "hi@ftech.ltd",
+        password: "123123123",
+      };
+
+      response = await axios.post(
+        "http://localhost:3030/authentication",
+        payload,
+        { headers }
+      );
+      result = response.data.authentication;
+
+      try {
+        expect(result).toBeDefined();
+      } catch (err) {
+        console.log("Fail with response", response);
+        throw err;
+      }
+      accumulation["accessToken"] = result.accessToken;
+      accumulation["danh"] = result.danh;
+    }, 10000);
+
+    it("API get traders", async () => {
+      let result /** Variable naming */;
+      let response /** Variable naming */;
+
+      const headers = {};
+      (headers[`Authorization`] = (" " + accumulation["accessToken"]).trim()),
+        (headers[`Authorization2`] = (
+          "Beare2r " + accumulation["accessToken"]
+        ).trim());
+
+      const payload = {};
+
+      (payload["token"] = accumulation["token"]),
+        (payload["Token1"] = accumulation["Token1"]);
+      response = await axios.get("http://localhost:3030/trader", { headers });
+      result = response.data.data;
+
+      try {
+        expect(result).toBeDefined();
+      } catch (err) {
+        console.log("Fail with response", response);
+        throw err;
+      }
+    }, 10000);
+
+    it("API create trader by socket", async () => {
+      let result /** Variable naming */;
+      let response /** Variable naming */;
+
+      const socket = io.connect("ws://localhost:3030", {
         forceNew: true,
-        transports: ['polling'],
-        query: + {"token":"my-token"}
-      })
-      done();
-    });
-        
-    afterAll((done) => {
-      socket.close();
-      done();
-    });
-        
-		
-  	it('API get token', async () => {
-  		let result /** Variable naming */;
-    
-  		
-  		
-        const headers = {"Accept":"*/*"}
-  
-  
-        const payload = {"strategy":"local","email":"hi@ftech.ltd","password":"123123123"} 
-  
-        const response = await axios.post('http://localhost:3030/authentication' ,payload ,{headers})
-        result = response.data.authentication;
-		  
-		expect(result).toBeDefined();
-		  accumulation['accessToken'] = result.accessToken;
-          accumulation['danh'] = result.danh;
-          
-	}, 10000);
-    
+        reconnection: false,
+        transports: ["polling"],
+        extraHeaders: {
+          Authorization: "Bearer " + accumulation["accessToken"],
+        },
+      });
 
-  	it('API get traders', async () => {
-  		let result /** Variable naming */;
-    
-  		
-  		
-        const headers = {}
-  headers[`Authorization`] = 'Bearer ' +  accumulation['accessToken']
-		,headers[`Authorization2`] = 'Beare2r ' +  accumulation['accessToken']
-		
-  
-        const payload = {} 
-  
-        payload['token'] = accumulation['token'],
-        payload['Token1'] = accumulation['Token1']
-        const response = await axios.get('http://localhost:3030/trader'  ,{headers})
-        result = response.data.data;
-		  
-		expect(result).toBeDefined();
-		  
-	}, 10000);
-    
-
-  	it('API create trader', async () => {
-  		let result /** Variable naming */;
-    
-  		
-  		
-        const headers = {}
-  headers[`Authorization`] = 'Bearer ' +  accumulation['accessToken']
-		
-  
-        const payload = {"init_balance":50,"full_name":"Nguyen Hoang Danh","email":" OB9fDJDbfHP@gmail.com","telephone":44372448,"secret_key":" 5gz3JgaYEuM","api_key":" QYABJABDCIK","subscribed_callback":" YB4YB2tzXvb"} 
-  
-        const response = await axios.post('http://localhost:3030/trader' ,payload ,{headers})
-        result = response.data._id;
-		  
-		expect(result).toBeDefined();
-		  
-	}, 10000);
-    
-
-  	it('API get traders by socket', async () => {
-  		let result /** Variable naming */;
-    
-  		
-  		
-        const response = await new Promise( resolve => {
-          socket.emit('find', "trader",{}, (data) => {
-            resolve(data)
+      response = (await new Promise((resolve) => {
+        socket.on("connect", async () => {
+          await new Promise(() => {
+            socket.emit(
+              "create",
+              "trader",
+              {
+                init_balance: 50,
+                full_name: "Nguyen Hoang Danh",
+                email: " 8X9r9vEGcOy@gmail.com",
+                telephone: 584940013,
+                secret_key: " zsBlJDK0iz5",
+                api_key: " 29o8a3hjonQ",
+                subscribed_callback: " gI3PPRfptJo",
+              },
+              (err, data) => {
+                if (err) {
+                  resolve(err);
+                }
+                resolve(data);
+              }
+            );
           });
         });
-        result = response;
-		  
-		expect(result).toBeDefined();
-		  
-	}, 10000);
-    
-});
-
-describe('[Kịch bản 2 lỗi đăng nhập]', () => {
-	const accumulation = {};
-    let socket /** Variable naming */;
-    
-    beforeAll((done) => {
-      socket /** Variable naming */ = io.connect("ws://localhost:3030",
-      { 
-        forceNew: true,
-        transports: ['polling'],
-        query: + {"token":"my-token"}
-      })
-      done();
-    });
-        
-    afterAll((done) => {
+      })) as any;
       socket.close();
-      done();
-    });
-        
-		
-  	it('Fail to login', async () => {
-  		let result /** Variable naming */;
-    
-  		
-  		
-        const headers = {"Accept":"*/*"}
-  
-  
-        const payload = {"strategy":"local","email":"hi@ftech.ltd","password":"1123123123"} 
-  
-        const response = await axios.post('http://localhost:3030/authentication' ,payload ,{headers})
-        result = response.data;
-		  
-		expect(result).toMatchObject({"message":"Thông tin đăng nhập không đúng"});
-		  
-	}, 10000);
-    
+      result = response._id;
 
-  	it('API update trader fail authen', async () => {
-  		let result /** Variable naming */;
-    
-  		
-        try {
-          
-        const headers = {}
-  
-  
-        const payload = {} 
-  
-        const response = await axios.put('http://localhost:3030/trader/630dd7e6674c0c54111acbbe'  ,{headers})
-        } catch (err) {
-          result = err.response.status;
+      try {
+        expect(result).toBeDefined();
+      } catch (err) {
+        console.log("Fail with response", response);
+        throw err;
+      }
+    }, 10000);
+  });
+
+  describe("[Kịch bản 2 lỗi đăng nhập]", () => {
+    const accumulation = {};
+
+    it("Fail to login", async () => {
+      let result /** Variable naming */;
+      let response /** Variable naming */;
+
+      const headers = { Accept: "*/*" };
+
+      const payload = {
+        strategy: "local",
+        email: "hi@ftech.ltd",
+        password: "1123123123",
+      };
+
+      response = await axios.post(
+        "http://localhost:3030/authentication",
+        payload,
+        { headers }
+      );
+      result = response.data;
+
+      try {
+        expect(result).toMatchObject({
+          message: "Thông tin đăng nhập không đúng",
+        });
+      } catch (err) {
+        console.log("Fail with response", response);
+        throw err;
+      }
+    }, 10000);
+
+    it("API update trader fail authenticate", async () => {
+      let result /** Variable naming */;
+      let response /** Variable naming */;
+
+      try {
+        const headers = {};
+
+        const payload = { full_name: "hoangdanh" };
+
+        response = await axios.put(
+          "http://localhost:3030/trader/630dd7e6674c0c54111acbbe",
+          payload,
+          { headers }
+        );
+      } catch (err) {
+        if (err.message.includes("ECONNREFUSED")) {
+          throw err;
         }
-  		//Request
+        result = err.response.status;
+      }
+      //Request
       //Result
-		  
-		expect(result).toBe(401);
-		  
-	}, 10000);
-    
+
+      try {
+        expect(result).toBe(401);
+      } catch (err) {
+        console.log("Fail with response", response);
+        throw err;
+      }
+    }, 10000);
+  });
 });
-});
-	

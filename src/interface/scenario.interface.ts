@@ -5,12 +5,7 @@ interface ITestProject {
 
 interface IScenario {
   name: string;
-  status?: string;
-  logs?: Object[];
-  steps?: IStep[];
-  owner?: string;
-  preCondition: string;
-
+  socket
 }
 
 interface IAuthenticate {
