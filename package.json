@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
+  "imports": {
+    "#projects.controller": "./projects.controller.js"
+  },
   "main": "index.js",
   "scripts": {
     "test": "jest --detectOpenHandles test/"
@@ -26,12 +29,15 @@
     "@graphql-codegen/typescript-mongodb": "^2.4.3",
     "axios": "^0.27.2",
     "config": "^3.3.8",
+    "crud-mongoose": "^1.0.46",
     "execa": "^6.1.0",
     "express": "^4.18.1",
+    "fetch": "^1.1.0",
     "fs": "0.0.1-security",
     "glob": "^8.0.3",
     "jest-html-reporter": "^3.7.0",
     "mongoose": "^6.6.1",
+    "node-crud": "^2.1.7",
     "nodemon": "^2.0.19",
     "socket.io": "^4.5.2",
     "socket.io-client": "^2.5.0",

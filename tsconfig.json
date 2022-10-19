@@ -7,7 +7,7 @@
     "noImplicitAny": false,
     "strict": false,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "suppressExcessPropertyErrors": true
   },
   "exclude": [

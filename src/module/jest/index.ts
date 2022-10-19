@@ -4,18 +4,19 @@ import fs from "fs";
 import { execa, execaCommand, execaCommandSync } from "execa";
 import * as template from "../../template/testCaseTemplate.js";
 import { InputType, RequestType } from "../../constants/constant.js";
-
+import { IStep } from "../../interface/step.interface.js";
+import { getTrailers, loginCTR } from "../../ctr.testcase.js";
 export default async function runTest() {
   try {
     // Create test
     const signIn: IStep = {
       name: "API get token",
       requestData: {
-        requestType: RequestType.RESTFUL,
+        requestType: 'restful',
         restfulRequest: {
-          inputType: InputType.BODY,
-      method: "post",
-
+          inputType: 'body',
+          method: "post",
+          url: "http://localhost:3030/authentication",
           headers: { initHeaders: { Accept: "*/*" } },
           prevStepValue: null,
           payload: {
@@ -34,17 +35,17 @@ export default async function runTest() {
       },
       responseData: { setAccumulation: ["accessToken", "danh"] },
       stopOnError: true,
-      endpoint: { url: "http://localhost:3030/authentication" },
     };
 
     const failToLogin: IStep = {
       name: "Fail to login",
       requestData: {
-        requestType: RequestType.RESTFUL,
+        requestType: 'restful',
         restfulRequest: {
-          inputType: InputType.BODY,
-      method: "post",
-      headers: { initHeaders: { Accept: "*/*" } },
+          inputType: 'body',
+          url: "http://localhost:3030/authentication",
+          method: "post",
+          headers: { initHeaders: { Accept: "*/*" } },
           prevStepValue: null,
           payload: {
             strategy: "local",
@@ -62,15 +63,16 @@ export default async function runTest() {
       },
       responseData: { setAccumulation: [] },
       stopOnError: true,
-      endpoint: { url: "http://localhost:3030/authentication" },
     };
 
     const getTrader: IStep = {
       name: "API get traders",
       requestData: {
-        requestType: RequestType.RESTFUL,
+        requestType: 'restful',
         restfulRequest: {
-          inputType: InputType.QUERY,
+
+          inputType: 'query',
+          url: "http://localhost:3030/trader",
       method: "get",
       headers: {
             accumulation: [
@@ -99,15 +101,15 @@ export default async function runTest() {
       },
       responseData: { setAccumulation: [] },
       stopOnError: true,
-      endpoint: { url: "http://localhost:3030/trader" },
     };
 
     const updateTrader: IStep = {
       name: "API update trader fail authenticate",
       requestData: {
-        requestType: RequestType.RESTFUL,
+        requestType: 'restful',
         restfulRequest: {
-          inputType: InputType.BODY,
+          url: "http://localhost:3030/trader/630dd7e6674c0c54111acbbe",
+          inputType: 'body',
       method: "put",
       headers: {
             accumulation: [],
@@ -124,18 +126,16 @@ export default async function runTest() {
         resultField: "status",
       },
       responseData: { setAccumulation: [] },
-      stopOnError: true,
-      endpoint: {
-        url: "http://localhost:3030/trader/630dd7e6674c0c54111acbbe",
-      },
+      stopOnError: true
     };
 
     const createTrader: IStep = {
       name: "API create trader",
       requestData: {
-        requestType: RequestType.RESTFUL,
+        requestType: 'restful',
         restfulRequest: {
-          inputType: InputType.BODY,
+          inputType: 'body',
+          url: "http://localhost:3030/trader",
           method: "post",
           headers: {
             accumulation: [
@@ -177,14 +177,14 @@ export default async function runTest() {
       },
       responseData: { setAccumulation: [] },
       stopOnError: true,
-      endpoint: { url: "http://localhost:3030/trader" },
     };
 
     const createTraderBySocket: IStep = {
       name: "API create trader by socket",
       requestData: {
-        requestType: RequestType.SOCKET,
+        requestType: 'socket',
         socketRequest: {
+          url: 'ws://localhost:3030',
           opts: {
             initOpts: null,
             accumulation: [ { field: 'extraHeaders', value: {field: 'Authorization', value: 'accessToken', prefix: 'Bearer'}, prefix:'' },]
@@ -226,8 +226,9 @@ export default async function runTest() {
     const getTraderSocket: IStep = {
       name: "API get traders by socket",
       requestData: {
-        requestType: RequestType.SOCKET,
+        requestType: 'socket',
         socketRequest: {
+          url: 'ws://localhost:3030',
           opts: {
             initOpts: null,
             accumulation: [ { field: 'extraHeaders', value: {field: 'Authorization', value: 'accessToken', prefix: 'Bearer'}, prefix:'' },]
@@ -257,10 +258,13 @@ export default async function runTest() {
     const stepUpdateTrader = createStep(updateTrader);
     const stepGetTraderSocket = createStep(getTraderSocket);
     const stepCreateTraderBySocket = createStep(createTraderBySocket);
-    const sce1 = [stepSignIn,stepGetTrader, stepCreateTraderBySocket];
-    const sce2 = [stepFailToLogin,stepUpdateTrader];
-    const scenario = createScenario(
-      "Kịch bản 1",
+    
+    
+    const sce1 = [createStep(loginCTR), createStep(getTrailers)];
+    const sce2 = [];
+
+    const scenario1 = createScenario(
+      "Trailer Master management",
       sce1.join('\n')
     );
 
@@ -270,8 +274,8 @@ export default async function runTest() {
     );
 
     const fileTestContent = createProject(
-      "ProjectName",
-      scenario + "\n" + scenario2
+      "CTR",
+      scenario1 + "\n" + scenario2
     );
 
     //TODO naming file by format: 'projectname_datetime'
@@ -328,7 +332,7 @@ function createStep(step: IStep) { //TODO refactor this function
 
   let request = '';
   // Set restful request
-  if (step.requestData.requestType === RequestType.RESTFUL) {
+  if (step.requestData.requestType === 'restful') {
     const restfulRequest = step.requestData.restfulRequest;
     const originPayload = restfulRequest.payload
       ? restfulRequest.payload
@@ -350,12 +354,12 @@ function createStep(step: IStep) { //TODO refactor this function
       headers = { ...headers, ...payload.getHeaders() };
     }
 
-    if (restfulRequest.inputType === InputType.BODY) {
+    if (restfulRequest.inputType === 'body') {
       payload = originPayload;
     }
 
     request = template.restfulRequest(
-      step.endpoint.url,
+      step.requestData.restfulRequest.url,
       headers,
       step.requestData.restfulRequest.method,
       payload,
@@ -364,9 +368,9 @@ function createStep(step: IStep) { //TODO refactor this function
   }
 
   // Set socket request
-  if (step.requestData.requestType === RequestType.SOCKET) { 
+  if (step.requestData.requestType == 'socket') { 
     const socketConnect = template.socketConnect(
-      "ws://localhost:3030",
+      step.requestData.socketRequest.url,
       step.requestData.socketRequest.opts
     );
     const socketCloseConnect = template.socketCloseConnect();
@@ -383,7 +387,7 @@ function createStep(step: IStep) { //TODO refactor this function
   let expect = "";  
 
   // Set result
-  if (step.requestData.requestType === RequestType.RESTFUL) {
+  if (step.requestData.requestType === 'restful') {
     result = template.getResultFromResponse(
       step.outputExpected.resultField
     );
@@ -393,7 +397,7 @@ function createStep(step: IStep) { //TODO refactor this function
     );
   }
 
-  if (step.requestData.requestType === RequestType.RESTFUL && step.outputExpected.status !== 200 /** TODO: 200 constant value and default if not set */) {
+  if (step.requestData.requestType === 'restful' && step.outputExpected.status !== 200 /** TODO: 200 constant value and default if not set */) {
     const resultInCatch = template.getResultFromError( 
       step.outputExpected.resultField
     );

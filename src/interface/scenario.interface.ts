@@ -1,9 +1,9 @@
-interface ITestProject {
+export interface ITestProject {
   name: string;
   scenarios: IScenario[];
 }
 
-interface IScenario {
+export interface IScenario {
   name: string;
   socket
 }

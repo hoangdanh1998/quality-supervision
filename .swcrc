@@ -2,9 +2,16 @@
     "jsc": {
         "parser": {
             "syntax": "typescript",
-            "tsx": true,
-            "dynamicImport": true,
-            "decorators": true
+            "jsx": false,
+            "dynamicImport": false,
+            "privateMethod": false,
+            "functionBind": false,
+            "classPrivateProperty": false,
+            "exportDefaultFrom": false,
+            "exportNamespaceFrom": false,
+            "decorators": false,
+            "decoratorsBeforeExport": false,
+            "importMeta": false
         },
         "transform": {
             "legacyDecorator": true,
@@ -18,6 +25,7 @@
             "compress": false,
             "mangle": false
         },
+        "paths":    {},
         "baseUrl": "src"
     },
     "module": {

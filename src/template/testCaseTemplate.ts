@@ -262,7 +262,7 @@ const exploreObject = (option) => {
   }
 
   if (typeof option.value === 'string') {
-    return `${option.field}: '${option.prefix} ' + accumulation['${option.value}']`;
+    return `${option.field}: ('${option.prefix} ' + accumulation['${option.value}']).trim()`;
   } 
 }
 

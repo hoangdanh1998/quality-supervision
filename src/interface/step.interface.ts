@@ -1,23 +1,18 @@
-interface IStep {
+export type IStep = {
   name: string;
   requestData: IRequestData;
   outputExpected: IExpectOutput;
   responseData: IOutputData;
   stopOnError: boolean;
-  endpoint: IEndpoint;
-  
 }
 
-interface IRequestData {
-  requestType: string;
+type IRequestData = {
+  requestType: RequestType;
   restfulRequest?: IRestfulRequest;
   socketRequest?: ISocketRequest;
 }
 interface IOutputData {
   setAccumulation: string[];
-}
-interface IEndpoint {
-  url: string;
 }
 
 interface IExpectOutput {
@@ -31,10 +26,12 @@ interface IExpectOutput {
 }
 
 interface ISocketRequest {
+
+  url: string;
   eventName: string;
   opts: {
     initOpts: any;
-    accumulation: IOptsField[];
+    accumulation?: IOptsField[];
   };
   args: any[];
 
@@ -55,9 +52,14 @@ interface IHeadersField {
 }
 
 interface IRestfulRequest {
-  inputType: string;
+  inputType: InputType;
+  url: string;
   headers: { initHeaders: any; accumulation?: IHeadersField[] };
   payload: Object;
   prevStepValue: any;
-  method: string;
+  method: HttpMethod;
 }
+
+type HttpMethod = "get" | "post" | "put" | "patch"
+type RequestType = "restful" | "socket"
+type InputType = "body" | "query" | "form-data"

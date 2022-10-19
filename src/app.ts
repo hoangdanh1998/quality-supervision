@@ -2,6 +2,8 @@ import express  from 'express';
 import configuration from './configuration.js';
 import mongoose from './connector/mongoose.js';
 import test from './module/jest/index.js';
+import router from './module/index.js';
+// import { router } from './module/projects/index.js';
 
 const app = express();
 
@@ -9,10 +11,12 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-test();
+app.use(express.json());
 
+router(app)
+// test();
 const config = configuration();
-// mongoose(config.mongodb);
+mongoose(config.mongodb, app);
 
 const PORT = config.port;
 const HOST = config.host;
