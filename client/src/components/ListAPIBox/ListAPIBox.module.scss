@@ -1,0 +1,38 @@
+@import '../../styles/variables';
+
+.search_api {
+  :global {
+    i.pi.pi-search {
+      left: 10px;
+    }
+
+    input.p-inputtext {
+      width: 100%;
+      padding: 9px 10.5px 9px 34px;
+    }
+  }
+}
+
+.list_api {
+    box-shadow: none !important;
+
+  & > [class~="p-panel-header"]  {
+    padding: 0 !important;
+    background: transparent !important;
+
+    &:hover {
+      cursor: pointer;
+      background-color: $common-bg !important;
+    }
+  }
+
+  & > [class~="p-toggleable-content"] > [class~="p-panel-content"] {
+    padding: 0 0 12px 30px;
+    background: transparent !important;
+  }
+
+  .item_api:hover {
+    cursor: pointer;
+    background-color: $common-bg;
+  }
+}

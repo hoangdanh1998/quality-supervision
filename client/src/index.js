@@ -4,6 +4,7 @@ import App from './App';
 
 import 'primereact/resources/themes/mdc-light-indigo/theme.css';
 import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
 import './index.scss';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

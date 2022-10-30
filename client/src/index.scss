@@ -1,10 +1,9 @@
+@import './styles/variables';
+@import 'primeflex/primeflex.scss';
+
 * {
   margin: 0;
   padding: 0;
-
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1.7;
 }
 
 body {
@@ -13,4 +12,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  background-color: $common-bg;
+  overflow: hidden;
 }
