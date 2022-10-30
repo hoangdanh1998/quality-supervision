@@ -1,9 +1,11 @@
 import { IResponse } from "../../interface/response.interface.js";
+import BaseControllerFunction from "./base.controller.function.js";
 import BaseService from "./base.service.js";
 
-export default class BaseController<T> {
+export default class BaseController<T> extends BaseControllerFunction {
   service
   constructor(name, schema) {
+    super();
 		this.service = new BaseService<T>(name, schema);
 	}
   createResponseSuccess(result: any) {

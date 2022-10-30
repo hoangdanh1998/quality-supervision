@@ -45,4 +45,6 @@ export default class BaseRepository<T> {
   find(query, projection?: any, options?) {
     return this._model.find(query, projection, options).lean();
   }
+
+  
 }

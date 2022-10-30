@@ -1,4 +1,5 @@
 
+import { IPopulate } from "../../interface/model.interface.js";
 import BaseRepository from "./base.repository.js";
 
 interface Paginated<T> {
@@ -36,10 +37,20 @@ export default class BaseService<T> {
 	async _get(id): Promise<T> {
 		const result: T = await this.repository.getDocumentById(id);
 		if (!result) {
-			throw new Error()
+			throw new Error('Record "'+ id+'" not found ')
 		}
-		return 
+		return result;
 	}
+	/**
+	 * id
+	 * populate: { property: name of property, }
+	 */
+	async _getAndPopulate(id: string, populate: IPopulate[]) {
+		const commandQuery = ' this.repository._model.findOne({_id: id})' + populate.reduce((prev, current, index, populate) => {return prev + `.populate('${current.property}',${current.getFields.join(',')})`}, '');
+		const result: T = await eval(commandQuery);
+		return result;
+	}
+
 	async _patch(id, param): Promise<T> {
 		return await this.repository.updateDocument({_id: id}, param);
 	}

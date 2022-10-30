@@ -1,3 +1,4 @@
+import express  from 'express';
 import FormData from "form-data";
 import pathNpm from "path";
 import fs from "fs";
@@ -6,7 +7,8 @@ import * as template from "../../template/testCaseTemplate.js";
 import { InputType, RequestType } from "../../constants/constant.js";
 import { IStep } from "../../interface/step.interface.js";
 import { getTrailers, loginCTR } from "../../ctr.testcase.js";
-export default async function runTest() {
+import JestController from './jest.controller.js';
+export async function runTest() {
   try {
     // Create test
     const signIn: IStep = {
@@ -319,7 +321,7 @@ function createProject(name, scenarios: string) {
  * @param preparation 
  * @returns 
  */
-function createScenario(name, steps: string) { //TODO docs create socket in beforeAll
+export function createScenario(name, steps: string) { //TODO docs create socket in beforeAll
   return template.scenario(
     name,
     template.initVariables([]),
@@ -327,7 +329,7 @@ function createScenario(name, steps: string) { //TODO docs create socket in befo
   );
 }
 
-function createStep(step: IStep) { //TODO refactor this function
+export function createStep(step: IStep) { //TODO refactor this function
   const initVariables = template.initVariables([{ name: "result /** Variable naming */", value: "" }, { name: "response /** Variable naming */", value: "" }]);
 
   let request = '';
@@ -408,7 +410,7 @@ function createStep(step: IStep) { //TODO refactor this function
 
   expect = template.expect(step.outputExpected.expectValue, step.outputExpected.type);
   let accumulation = "";
-  if (step.responseData.setAccumulation.length) {
+  if (step.responseData?.setAccumulation?.length) {
     step.responseData.setAccumulation.map((accumulate) => {
       accumulation += template.accumulation(accumulate);
     });
@@ -438,4 +440,16 @@ function generateString(length) {
   }
 
   return result;
+}
+
+
+export default class JestRouter{
+  router = express.Router()
+	constructor() {
+		this.router.get('/gen-code', async (request, response) => {
+      const controller = new JestController();
+			response.send(await controller.generateTestCode(request.query.scenarioId));
+		});
+	}
+	
 }
