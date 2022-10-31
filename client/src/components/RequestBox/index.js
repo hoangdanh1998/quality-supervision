@@ -6,6 +6,9 @@ import { Button } from 'primereact/button';
 import { TabMenu } from 'primereact/tabmenu';
 import { RadioButton } from 'primereact/radiobutton';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { InputNumber } from 'primereact/inputnumber';
+import styles from './RequestBox.module.scss'
+import clsx from 'clsx';
 
 const items = [
   { label: 'Blog Application' },
@@ -20,35 +23,36 @@ const cities = [
 ];
 const home = { icon: 'pi pi-th-large'}
 const tabs = [
-  {label: 'Params', icon: 'pi pi-fw pi-home'},
-  {label: 'Auth', icon: 'pi pi-fw pi-calendar'},
-  {label: 'Header', icon: 'pi pi-fw pi-pencil'},
-  {label: 'Body', icon: 'pi pi-fw pi-file'},
-  {label: 'Expected Output', icon: 'pi pi-fw pi-cog'},
-  {label: 'Jest', icon: 'pi pi-fw pi-cog'},
+  {label: 'Params'},
+  {label: 'Auth'},
+  {label: 'Header'},
+  {label: 'Body'},
+  {label: 'Expected Output'},
+  {label: 'Jest'},
 ];
+const contentTypes = [
+  {name: 'application/json'},
+  {name: 'application/text'},
+  {name: 'application/html'},
+];
+
 function RequestBox() {
   const [city, setCity] = useState("GET");
   const [activeIndex, setActiveIndex] = useState(0);
   const [bodyType, setBodyType] = useState(null);
   const [code, setCode] = useState("")
-  return (
-    <div className='px-1'>
-      <h3>
-          <BreadCrumb model={items} home={home} style={{background: 'inherit', border: 'none'}}/>
-      </h3>
-      <div className='w-full flex mt-2'>
-          <Dropdown className='w-25' optionLabel="name" value={city} options={cities} onChange={(e) => setCity(e.value)}
-          style={{minWidth: "7.5rem",}}/>
-          <div className="p-inputgroup mr-2 ml-2">
-              <InputText placeholder="Enter request URL" />
-          </div>
-          <Button label="GO" />
-      </div>
-      <TabMenu className='mt-2' model={tabs} activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}/>
-      
-      {/*This is tab content */}
-      <div className='mt-3 flex md:justify-content-start justify-content-center flex-wrap card-container cyan-container'>
+  const [statusCode, setStatusCode] = useState("")
+  const [contentType, setContentType] = useState("application/json")
+
+  let tabContent;
+  switch (activeIndex) {
+    case 0: break;
+    case 1: break;
+    case 2: break;
+    case 3: 
+      tabContent = 
+    <div className='mt-3 '>
+      <div className='flex md:justify-content-start justify-content-center flex-wrap card-container cyan-container'>
         <div className="field-radiobutton mr-5">
               <RadioButton value="val1" name="city1" onChange={(e) => setBodyType(e.value)} checked={bodyType === 'val1'} />
               <label htmlFor="city1">raw</label>
@@ -68,6 +72,47 @@ function RequestBox() {
               style={{width: '100%'}}
               onChange={(e) => setCode(e.target.value)} />
       </div>
+    </div>
+    break;
+    case 4: 
+    tabContent =  
+    <div className='mt-3 flex justify-content-between'>
+      <div className='flex align-items-center'>
+        <div className='mr-2'>Status Code</div>
+        <InputNumber 
+        className={clsx(styles.p_inputnumber, {
+          [styles.accept]: statusCode >= 200 && statusCode < 300,
+          [styles.request_error]: statusCode >= 400 && statusCode < 500,
+          [styles.server_error]: statusCode >= 500 && statusCode < 600
+        })}
+         value={statusCode} 
+         onChange={(e) => setStatusCode(e.value)} />
+      </div>
+      <div className='flex align-items-center'>
+        <div className='mr-2'>Content-Type</div>
+        <Dropdown optionLabel="name" value={contentType} options={contentTypes} onChange={(e) => setContentType(e.value)}/>
+      </div>
+    </div>
+    break;
+    default:
+      break;
+  }
+
+  return (
+    <div className='px-1'>
+      <h3>
+          <BreadCrumb model={items} home={home} style={{background: 'inherit', border: 'none'}}/>
+      </h3>
+      <div className='w-full flex mt-2'>
+          <Dropdown className='w-25' optionLabel="name" value={city} options={cities} onChange={(e) => setCity(e.value)}
+          style={{minWidth: "7.5rem",}}/>
+          <div className="p-inputgroup mr-2 ml-2">
+              <InputText placeholder="Enter request URL" />
+          </div>
+          <Button label="GO" />
+      </div>
+      <TabMenu className='mt-2' model={tabs} activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}/>
+      { tabContent}
   </div>
   )
 }

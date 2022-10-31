@@ -1,0 +1,20 @@
+
+
+.p_inputnumber{
+    max-height: 2rem;
+
+            & > input[class~="p-inputtext"] {
+                background-color: whitesmoke;
+                max-width: 4rem;
+
+            }
+        &.accept > input[class~="p-inputtext"] {
+            background-color: limegreen;
+        }
+        &.request_error > input[class~="p-inputtext"] {
+            background-color: orange;
+        }
+        &.server_error > input[class~="p-inputtext"] {
+            background-color: red;
+        }
+}
