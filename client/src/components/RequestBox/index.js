@@ -7,6 +7,7 @@ import { TabMenu } from 'primereact/tabmenu';
 import { RadioButton } from 'primereact/radiobutton';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { InputNumber } from 'primereact/inputnumber';
+import {DataTable} from '../../components'
 import styles from './RequestBox.module.scss'
 import clsx from 'clsx';
 
@@ -15,26 +16,20 @@ const items = [
   { label: 'List Blog' },
 ];
 const cities = [
-  {name: 'GET'},
-  {name: 'POST'},
-  {name: 'DELETE'},
-  {name: 'PACTH'},
-  {name: 'PUT'}
+  'GET',
+  'POST',
+  'DELETE',
+  'PACTH',
+  'PUT'
 ];
 const home = { icon: 'pi pi-th-large'}
-const tabs = [
-  {label: 'Params'},
-  {label: 'Auth'},
-  {label: 'Header'},
-  {label: 'Body'},
-  {label: 'Expected Output'},
-  {label: 'Jest'},
-];
 const contentTypes = [
   {name: 'application/json'},
   {name: 'application/text'},
   {name: 'application/html'},
 ];
+const frameworks = [{name: "Jest"},{name: "Junit"}]
+
 
 function RequestBox() {
   const [city, setCity] = useState("GET");
@@ -42,13 +37,31 @@ function RequestBox() {
   const [bodyType, setBodyType] = useState(null);
   const [code, setCode] = useState("")
   const [statusCode, setStatusCode] = useState("")
-  const [contentType, setContentType] = useState("application/json")
+  const [contentType, setContentType] = useState({name: "application/json"})
+
+  const [framework, setFramework] = useState("Jest")
+  const tabs = [
+    {label: 'Params'},
+    {label: 'Auth'},
+    {label: 'Header'},
+    {label: 'Body'},
+    {label: 'Expected Output'},
+    {label: 'Jest', 
+    template: (item, options) => {
+      return (
+          /* custom element */
+          <Dropdown style={{border: 'none'}} optionLabel="name" value={framework} options={frameworks} onChange={(e) => setFramework(e.value)}/>
+      );
+  }},
+  ];
 
   let tabContent;
   switch (activeIndex) {
     case 0: break;
+    case 2: 
+    tabContent = <DataTable/>;
+    break;
     case 1: break;
-    case 2: break;
     case 3: 
       tabContent = 
     <div className='mt-3 '>
@@ -76,7 +89,8 @@ function RequestBox() {
     break;
     case 4: 
     tabContent =  
-    <div className='mt-3 flex justify-content-between'>
+    <>
+    <div className='mt-3 mb-3 flex justify-content-between'>
       <div className='flex align-items-center'>
         <div className='mr-2'>Status Code</div>
         <InputNumber 
@@ -90,9 +104,23 @@ function RequestBox() {
       </div>
       <div className='flex align-items-center'>
         <div className='mr-2'>Content-Type</div>
-        <Dropdown optionLabel="name" value={contentType} options={contentTypes} onChange={(e) => setContentType(e.value)}/>
+        <Dropdown 
+          className={styles.p_dropdown} 
+          optionLabel="name" 
+          value={contentType}
+          options={contentTypes} 
+          onChange={(e) => setContentType(e.value)}
+         />
       </div>
     </div>
+    <div>
+        <InputTextarea rows={5} 
+        value={code} 
+        style={{width: '100%'}}
+        onChange={(e) => setCode(e.target.value)}
+        placeholder="Response "/>
+    </div>
+    </>
     break;
     default:
       break;
@@ -104,7 +132,7 @@ function RequestBox() {
           <BreadCrumb model={items} home={home} style={{background: 'inherit', border: 'none'}}/>
       </h3>
       <div className='w-full flex mt-2'>
-          <Dropdown className='w-25' optionLabel="name" value={city} options={cities} onChange={(e) => setCity(e.value)}
+          <Dropdown className='w-25' value={city} options={cities} onChange={(e) => setCity(e)}
           style={{minWidth: "7.5rem",}}/>
           <div className="p-inputgroup mr-2 ml-2">
               <InputText placeholder="Enter request URL" />
