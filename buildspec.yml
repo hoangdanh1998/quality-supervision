@@ -1,0 +1,17 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - echo "Installing something"
+      - cd ./quality-supervision/client
+  pre_build:
+    commands:
+      - echo "we are in rebuild phase"
+  build:
+    commands:
+      - echo "we run some tests"
+  post_build:
+    commands:
+      - echo "we are in post build phase"
