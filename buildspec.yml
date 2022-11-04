@@ -5,7 +5,6 @@ phases:
       nodejs: 16
     commands:
       - echo "Installing something"
-      - cd ./quality-supervision/client
   pre_build:
     commands:
       - echo "we are in rebuild phase"
